@@ -14,6 +14,15 @@ in
       hashedPassword = machine.succeed("cat /var/src/secrets/alice/password").strip()
       machine.succeed("cat /etc/shadow | grep '^alice:" + hashedPassword + ":1::::::$'")
     '';
+  password = tests-lib.makeTest "password"
+    ''
+      users.users.alice.isNormalUser = true;
+      users.users.alice.passwordFile = asecret-lib.password "alice/password";
+    ''
+    ''
+      hashedPassword = machine.succeed("cat /var/src/secrets/alice/password").strip()
+      machine.succeed("cat /etc/shadow | grep '^alice:" + hashedPassword + ":1::::::$'")
+    '';
   ssh-key-pair = tests-lib.makeTest "ssh-key-pair"
     ''
       services.openssh.enable = true;

@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 # Usage: asecret export
 #        asecret generate hashed-password SECRET_PATH
+#        asecret generate password SECRET_PATH
 #        asecret generate ssh-key-pair [--bits=BITS] [--type=TYPE] SECRET_PATH
 #        asecret generate ssl-certificate CA_PATH CERT_PATH DOMAIN...
 
@@ -15,6 +16,12 @@ if test "$generate" = true; then
   if test "$hashed_password" = true; then
     if test "$dry_run" = false && ! pass show "$SECRET_PATH" &>/dev/null; then
       pwgen 24 1 | mkpasswd -s | pass insert -m "$SECRET_PATH" >/dev/null
+    fi
+    jq -n '"\($path)" | tojson' \
+      --arg path "$ASECRET_OUT"/"$SECRET_PATH"
+  elif test "$password" = true; then
+    if test "$dry_run" = false && ! pass show "$SECRET_PATH" &>/dev/null; then
+      pwgen 24 1 | pass insert -m "$SECRET_PATH" >/dev/null
     fi
     jq -n '"\($path)" | tojson' \
       --arg path "$ASECRET_OUT"/"$SECRET_PATH"
