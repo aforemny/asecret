@@ -14,23 +14,23 @@ dry_run=$(test ! -z "${ASECRET_DRY_RUN-}" && echo true || echo false)
 
 if test "$generate" = true; then
   if test "$hashed_password" = true; then
-    if test "$dry_run" = false && ! pass show "$SECRET_PATH" &>/dev/null; then
+    if test "$dry_run" = false && ! test -f "$PASSWORD_STORE_DIR"/"$SECRET_PATH".gpg; then
       pwgen 24 1 | mkpasswd -s | pass insert -m "$SECRET_PATH" >/dev/null
     fi
     jq -n '"\($path)" | tojson' \
       --arg path "$ASECRET_OUT"/"$SECRET_PATH"
   elif test "$password" = true; then
-    if test "$dry_run" = false && ! pass show "$SECRET_PATH" &>/dev/null; then
+    if test "$dry_run" = false && ! test -f "$PASSWORD_STORE_DIR"/"$SECRET_PATH".gpg; then
       pwgen 24 1 | pass insert -m "$SECRET_PATH" >/dev/null
     fi
     jq -n '"\($path)" | tojson' \
       --arg path "$ASECRET_OUT"/"$SECRET_PATH"
   elif test "$ssh_key_pair" = true; then
-    if test "$dry_run" = false && ! pass show "$SECRET_PATH" &>/dev/null; then
+    if test "$dry_run" = false && ! test -f "$PASSWORD_STORE_DIR"/"$SECRET_PATH".gpg; then
       ( exec 3>&1 ; ssh-keygen"${bits:+ -b "$bits"}"${type:+ -t "$type"} -f /proc/self/fd/3 -N '' <<<y &>/dev/null || :) |
       pass insert -m "$SECRET_PATH" >/dev/null
     fi
-    if test "$dry_run" = false && ! pass show "$SECRET_PATH".pub &>/dev/null; then
+    if test "$dry_run" = false && ! test -f "$PASSWORD_STORE_DIR"/"$SECRET_PATH".pub.gpg &>/dev/null; then
       pass show "$SECRET_PATH" | ssh-keygen -y -f /dev/stdin | pass insert -m "$SECRET_PATH".pub >/dev/null
     fi
     jq -n '$ARGS.named | tojson' \
@@ -39,8 +39,8 @@ if test "$generate" = true; then
   elif test "$ssl_certificate" = true; then
     (
       set -efuo pipefail
-      hasCA=$(pass show "$CA_PATH"/rootCA.pem &>/dev/null && echo true || echo false)
-      hasDomain=$(pass show "$CERT_PATH".pem &>/dev/null && echo true || echo false)
+      hasCA=$(test -f "$PASSWORD_STORE_DIR"/"$CA_PATH"/rootCA.pem.gpg &>/dev/null && echo true || echo false)
+      hasDomain=$(test -f "$PASSWORD_STORE_DIR"/"$CERT_PATH".pem.gpg &>/dev/null && echo true || echo false)
 
       if test "$dry_run" = false && test "$hasDomain" = false; then
         readonly tmp=$(mktemp -d)
