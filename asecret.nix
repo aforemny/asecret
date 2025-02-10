@@ -12,6 +12,7 @@
 , pwgen
 , rsync
 , stdenv
+, wireguard-tools
 }:
 stdenv.mkDerivation {
   name = "asecret";
@@ -34,6 +35,7 @@ stdenv.mkDerivation {
         pass
         pwgen
         rsync
+        wireguard-tools
       ]}
   '';
 }

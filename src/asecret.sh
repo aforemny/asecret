@@ -4,6 +4,7 @@
 #        asecret generate password SECRET_PATH
 #        asecret generate ssh-key-pair [--bits=BITS] [--type=TYPE] SECRET_PATH
 #        asecret generate ssl-certificate CA_PATH CERT_PATH DOMAIN...
+#        asecret generate wireguard SECRET_PATH
 
 set -efou pipefail
 
@@ -71,6 +72,17 @@ if test "$generate" = true; then
     jq -n '$ARGS.named | tojson' \
       --arg certificateFile "$ASECRET_OUT"/"$CERT_PATH".pem \
       --arg certificateKeyFile "$ASECRET_OUT"/"$CERT_PATH"-key.pem
+  elif test "$wireguard" = true; then
+    if test "$dry_run" = false && ! test -f "$PASSWORD_STORE_DIR"/"$SECRET_PATH".gpg; then
+      wg genkey | pass insert -m "$SECRET_PATH" >/dev/null
+    fi
+    if test "$dry_run" = false && ! test -f "$PASSWORD_STORE_DIR"/"$SECRET_PATH".pub.gpg &>/dev/null; then
+      pass show "$SECRET_PATH" | wg pubkey | pass insert -m "$SECRET_PATH".pub >/dev/null
+    fi
+    jq -n '$ARGS.named | tojson' \
+      --arg privateKeyFile "$ASECRET_OUT"/"$SECRET_PATH" \
+      --arg publicKey "$(pass show "$SECRET_PATH".pub)" \
+      --arg publicKeyFile "$ASECRET_OUT"/"$SECRET_PATH".pub
   fi
 elif test "$export" = true; then
   readonly tmp=$(mktemp -d)
