@@ -77,7 +77,7 @@ elif test "$export" = true; then
     cd $PASSWORD_STORE_DIR
     find . -type f
   ) | while read -r fn; do
-    if test $(basename "$fn") = ".gpg-id"; then
+    if test "$(basename "$fn")" = ".gpg-id"; then
       continue
     fi
     mkdir -p "$(dirname "$tmp"/"${fn%.gpg}")"
@@ -88,7 +88,7 @@ elif test "$export" = true; then
     cd $PASSWORD_STORE_DIR
     find . -type f
   ) | while read -r fn; do
-    if test $(basename "$fn") = ".gpg-id"; then
+    if test "$(basename "$fn")" = ".gpg-id"; then
       continue
     fi
     pass show "${fn%.gpg}" > "$tmp"/"${fn%.gpg}"
