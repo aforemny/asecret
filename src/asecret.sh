@@ -95,9 +95,8 @@ elif test "$export" = true; then
   done
 
   if test "$dry_run" = true; then
-    rsync -a "$tmp/"
+    rsync --archive --chown=root:root "$tmp/"
   else
-    mkdir -p "$ASECRET_OUT"
-    rsync -a --delete-after "$tmp/" "$ASECRET_OUT"
+    rsync --archive --chown=root:root --mkpath --delete-after "$tmp/" "$ASECRET_OUT"
   fi
 fi
