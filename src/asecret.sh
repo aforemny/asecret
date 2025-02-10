@@ -7,6 +7,10 @@
 
 set -efou pipefail
 
+if test "${ASECRET_DEBUG-}" != ""; then
+  set -x
+fi
+
 eval "$(sed -rn '0,/^$/{ /#!/d; s/^# ?//p }' "$0" | docopts -h- : "$@")"
 
 ASECRET_OUT=${ASECRET_OUT:-/var/src/secrets}
