@@ -7,6 +7,6 @@ let generate = args: builtins.fromJSON (builtins.extraBuiltins.asecret ([ "gener
     ({ type }:
       generate [ "ssh-key-pair" "--type" type secretPath ])
     { type = "ed25519"; };
-  sslCertificate = caPath: certPath: domains: generate ([ "ssl-certificate" caPath certPath ] ++ domains);
+  sslCertificate = secretPath: domains: generate ([ "ssl-certificate" secretPath ] ++ domains);
   wireguard = secretPath: generate [ "wireguard" secretPath ];
 }
